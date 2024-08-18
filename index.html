@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no, minimal-ui " />
+    <title>Vite App</title>
+  </head>
+  <body>
+   
+    <div class="experience">
+      <canvas class="experience-canvas"></canvas>
+    </div>
+
+    <div id="spotifyPlayer">
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2tDsxJAuDXeenhCpHAzSfz?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+  </div>
+    
+  <div id="spotify-player-controls">
+    <div id="track-info">
+      <span id="track-name"></span> by <span id="track-artist"></span>
+    </div>
+    <div id="button-controls">
+      <button id="previous-track" disabled>
+        <span class="material-icons">skip_previous</span>
+      </button>
+      <button id="play-pause" disabled>
+        <span id="play-pause-icon" class="material-icons">play_arrow</span>
+      </button>
+      <button id="next-track" disabled>
+        <span class="material-icons">skip_next</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="curve-container">
+    <svg viewBox="0 0 200 80">
+      <!-- Define the curved line using a path -->
+      <path id="curve" d="M20,1 C80,30 120,30 180,1" stroke="white" fill="transparent" />
+      <!-- Draggable dot -->
+      <circle id="dot" class="draggable-dot" cx="100" cy="23" r="3" />
+    </svg>
+  </div>
+
+  
+
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    
+    <script type="module" src="/main.js"></script>
+    
+   
+
+
+  </body>
+</html>
