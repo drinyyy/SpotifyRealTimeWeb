@@ -69,7 +69,7 @@ document.addEventListener('mouseup', function() {
 });
 
 const clientId = 'c22592c67d3b410b9adf4663b836114f';
-const redirectUri = 'http://localhost:5173/';
+const redirectUri = 'https://peaceful-background.vercel.app/';
 const scopes = 'streaming user-read-email user-read-private user-read-playback-state user-modify-playback-state';
 
 let player;
