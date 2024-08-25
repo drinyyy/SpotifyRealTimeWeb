@@ -5,7 +5,7 @@ import Experience from "./experience";
 import grassVertexShader from "./vertex.glsl"
 import grassFragmentShader from "./fragment.glsl"
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
-
+import GUI from 'lil-gui'; // Import lil-gui
 export default class Ground {
     constructor() {
         this.experience = new Experience();
@@ -20,25 +20,28 @@ export default class Ground {
         this.flower = this.resources.items.flower;
         this.actualFlower = this.flower.scene;
 
+        this.daisy = this.resources.items.daisy;
+        this.actualDaisy = this.daisy.scene;
+
         
 
         this.setGround();
         
         this.setFlowers();
-
+        this.setFlowers1();
         this.setGrass();
         // this.placeCubes();
-        
+        // this.setGUI();
     }
 
     setGround() {
         this.actualGround.position.set(3, 0, -1);
-    
+        this.groundMaterial = new THREE.MeshBasicMaterial({color:0x27601F})
         this.actualGround.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
-                child.material = new THREE.MeshPhysicalMaterial({color:0x364731,roughness: 1.0, })
+                child.material = this.groundMaterial;
                 if (!child.geometry.index) {
                     
                     child.geometry = new THREE.BufferGeometry().setFromPoints(child.geometry.attributes.position.array);
@@ -53,17 +56,20 @@ export default class Ground {
    
     setFlowers() {
         const textureLoader = new THREE.TextureLoader();
-        this.AOTexture = textureLoader.load('/textures/flower1.png');
+        this.AOTexture = textureLoader.load('/textures/Sunflower1.png');
         this.AOTexture.flipY = false;
     
         // Prepare the flower model
         this.actualFlower.traverse((child) => {
-            if (child.isMesh) {
-                    
-                    child.material = new THREE.MeshBasicMaterial({ map:this.AOTexture  }); // Stem
-                
-            }
+    if (child.isMesh) {
+        child.material = new THREE.MeshBasicMaterial({ 
+            map: this.AOTexture, // Your texture
+            transparent: true,
+            side: THREE.DoubleSide, // Renders both sides of the mesh
+            alphaTest: 0.5 // Adjust this value as needed
         });
+    }
+});
     
         // Debugging: Log the flower model structure
         
@@ -93,7 +99,7 @@ export default class Ground {
         const dummy = new THREE.Object3D();
         const matrices = [];
     
-        const flowerCount = 100; // Number of flowers to instance
+        const flowerCount = 30; // Number of flowers to instance
         const scaleFactor = Math.max(groundSize.x, groundSize.z) / 10;
         const positionOffset = new THREE.Vector3(3, 0, -1); // Adjust as needed
     
@@ -122,7 +128,7 @@ export default class Ground {
             if (isPositionValid(tempPosition)) {
                 dummy.position.copy(tempPosition);
                 dummy.rotation.y = Math.random() * Math.PI * 2;
-                dummy.scale.setScalar(0.01 + Math.random() * 0.005);
+                dummy.scale.setScalar(0.6 * 0.7);
                 dummy.updateMatrix();
     
                 matrices.push(dummy.matrix.clone());
@@ -165,6 +171,125 @@ export default class Ground {
         });
     }
     
+
+    setFlowers1() {
+        const textureLoader = new THREE.TextureLoader();
+        this.AOTexture = textureLoader.load('/textures/Daisy.png');
+        this.AOTexture.flipY = false;
+    
+        // Prepare the flower model
+        this.actualDaisy.traverse((child) => {
+    if (child.isMesh) {
+        child.material = new THREE.MeshBasicMaterial({ 
+            map: this.AOTexture, // Your texture
+            transparent: true,
+            side: THREE.DoubleSide, // Renders both sides of the mesh
+            alphaTest: 0.5 // Adjust this value as needed
+        });
+    }
+});
+    
+        // Debugging: Log the flower model structure
+        
+    
+        // Find a suitable mesh from the ground to sample from
+        let groundMesh;
+        this.actualGround.traverse((child) => {
+            if (child.isMesh && !groundMesh) {
+                groundMesh = child;
+            }
+        });
+    
+        if (!groundMesh) {
+            
+            return;
+        }
+        
+        const boundingBox = new THREE.Box3().setFromObject(groundMesh);
+        const groundSize = new THREE.Vector3();
+        boundingBox.getSize(groundSize);
+    
+        // Create a surface sampler
+        const sampler = new MeshSurfaceSampler(groundMesh).build();
+        const tempPosition = new THREE.Vector3();
+        const tempNormal = new THREE.Vector3();
+        
+        const dummy = new THREE.Object3D();
+        const matrices = [];
+    
+        const flowerCount = 800; // Number of flowers to instance
+        const scaleFactor = Math.max(groundSize.x, groundSize.z) / 10;
+        const positionOffset = new THREE.Vector3(3, 0, -1); // Adjust as needed
+    
+        // Define a single exclusion zone
+        const exclusionZone = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1));
+        const exclusionOffset = new THREE.Vector3(0.5, 0, -0.1); // Example offset
+
+    // Translate the exclusion zone
+        exclusionZone.translate(exclusionOffset);
+        // Visualize the exclusion zone
+        // this.visualizeExclusionZone(exclusionZone);
+    
+        // Function to check if a position is valid (outside the exclusion zone)
+        const isPositionValid = (position) => {
+            return !exclusionZone.containsPoint(position);
+        };
+    
+        let placedFlowers = 0;
+        while (placedFlowers < flowerCount) {
+            sampler.sample(tempPosition, tempNormal);
+            
+            tempPosition.multiplyScalar(5.8).add(positionOffset);
+            tempPosition.addScaledVector(tempNormal, 0.02);
+    
+            // Check if the position is valid before placing the flower
+            if (isPositionValid(tempPosition)) {
+                dummy.position.copy(tempPosition);
+                dummy.rotation.y = Math.random() * Math.PI * 2;
+                dummy.scale.setScalar(0.8 * 0.9);
+                dummy.updateMatrix();
+    
+                matrices.push(dummy.matrix.clone());
+                placedFlowers++;
+            }
+        }
+    
+        // Find all meshes in the flower model
+        const flowerMeshes = [];
+        this.actualDaisy.traverse((child) => {
+            if (child.isMesh) {
+                flowerMeshes.push(child);
+            }
+        });
+    
+        if (flowerMeshes.length === 0) {
+            
+            return;
+        }
+    
+        
+    
+        // Create instanced meshes for each part of the flower
+        flowerMeshes.forEach((mesh, index) => {
+            const instancedFlower = new THREE.InstancedMesh(
+                mesh.geometry,
+                mesh.material,
+                flowerCount
+            );
+    
+            // Set instance matrices
+            matrices.forEach((matrix, i) => {
+                instancedFlower.setMatrixAt(i, matrix);
+            });
+    
+            instancedFlower.instanceMatrix.needsUpdate = true;
+            instancedFlower.castShadow = true;
+            this.scene.add(instancedFlower);
+            
+        });
+    }
+
+
     setGrass() {
         let groundMesh;
         this.actualGround.traverse((child) => {
@@ -185,9 +310,9 @@ export default class Ground {
     
         
     
-        const grassCount = 40000;
-        const grassHeight = 0.25;
-        const grassWidth = 0.03;
+        const grassCount = 100000;
+        const grassHeight = 0.2;
+        const grassWidth = 0.02;
         const segments = 8; // Number of segments in the blade
     
         // Create a custom geometry for the grass blade with more segments
@@ -227,10 +352,13 @@ export default class Ground {
         uniforms: {
         time: { value: 0.0 },
         windSpeed: { value: 1.5 },  // Reduced from 2.1 for more subtle movement
-        windStrength: { value: 2.0 },
+        windStrength: { value: 3.0 },
         windDirection: { value: new THREE.Vector2(1.2, 2.2) },
         noiseTexture: { value: noiseTexture },
-        
+        grassColorLow: { value: new THREE.Color(0.066, 0.324, 0.054) },
+        grassColorMid:{ value: new THREE.Color(0.779, 0.779, 0.508) }, // Default low color
+        grassColorHigh: { value: new THREE.Color(0.9, 0.5, 0.15) },
+       
     },
 });
     
@@ -287,7 +415,28 @@ export default class Ground {
     }
     
 
+    setGUI() {
+        const gui = new GUI();
+        const grassFolder = gui.addFolder('Grass Colors');
+        
+        // Low grass color controls
+        grassFolder.add(this.grassMaterial.uniforms.grassColorLow.value, 'r', 0, 1).name('Low Grass Red');
+        grassFolder.add(this.grassMaterial.uniforms.grassColorLow.value, 'g', 0, 1).name('Low Grass Green');
+        grassFolder.add(this.grassMaterial.uniforms.grassColorLow.value, 'b', 0, 1).name('Low Grass Blue');
+        
+        grassFolder.add(this.grassMaterial.uniforms.grassColorMid.value, 'r', 0, 1).name('Mid Grass Red');
+        grassFolder.add(this.grassMaterial.uniforms.grassColorMid.value, 'g', 0, 1).name('Mid Grass Green');
+        grassFolder.add(this.grassMaterial.uniforms.grassColorMid.value, 'b', 0, 1).name('Mid Grass Blue');
+        // High grass color controls
+        grassFolder.add(this.grassMaterial.uniforms.grassColorHigh.value, 'r', 0, 1).name('High Grass Red');
+        grassFolder.add(this.grassMaterial.uniforms.grassColorHigh.value, 'g', 0, 1).name('High Grass Green');
+        grassFolder.add(this.grassMaterial.uniforms.grassColorHigh.value, 'b', 0, 1).name('High Grass Blue');
+        
+        grassFolder.open();
 
+       
+    }
+    
     
    
 

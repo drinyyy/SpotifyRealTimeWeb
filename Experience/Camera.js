@@ -40,7 +40,7 @@ export default class Camera {
             new THREE.Vector3(3.37, 0.35, 2),
             new THREE.Vector3(3.58, 0.239, 1.82),
             new THREE.Vector3(3.5, 0.3, 1.0),
-            new THREE.Vector3(3.50, 0.29, 1.0),
+            new THREE.Vector3(3.80, 0.35, 1.0),
         ]);
     }
     

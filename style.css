@@ -66,42 +66,7 @@
   justify-content: center;
   align-items: center;
 }
-#spotify-player-controls {
-  position: absolute;
-  margin-top: 10px;
-  color: white;
-  background-color: rgba(255, 0, 0, 0);
-  z-index: 999;
-  text-align: center;
-  right: 10%;
-  top: 30%;
-}
 
-#track-info {
-  font-family: "Comfortaa", sans-serif;
-  margin-bottom: 10px; /* Space between the track info and the buttons */
-  display: block;
-  text-align: center;
-}
-
-button {
-  border-radius: 0px;
-  color: rgb(253, 253, 253);
-  background-color: rgba(204, 195, 195, 0);
-  padding: 5px 10px;
-  margin-right: 20px;
-  display: inline-block;
-  outline: none; /* Remove the outline */
-  border: none;
-}
-
-#play-pause {
-  margin-right: 20px;
-}
-
-#previous-track, #next-track {
-  margin-right: 20px;
-}
 
 .curve-container {
   width: 100%;
@@ -120,4 +85,74 @@ svg {
 .draggable-dot {
   fill: rgb(255, 255, 255);
   cursor: pointer;
+}
+
+
+
+.custom-controls {
+  z-index: 10; /* Add z-index to ensure it's on top */
+  position: absolute;
+  right: 20%;
+  margin-top: 10px;
+  text-align: left; /* Changed to left to align contents */
+  
+  width: 500px;
+  height: 100px;
+  
+}
+.custom-controls .background-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(5px); /* Adjust blur effect */
+  z-index: -1; /* Ensure it stays behind other content */
+  border-radius: 50px;
+  opacity: 0.5;
+}
+.custom-controls button {
+  border: none;
+  position: relative;
+  top: 15%;
+  left: 19%;
+  margin: 5px;
+  padding: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0);
+}
+
+#trackInfo {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 16px;
+  color: #ffffff;
+  position: relative;
+  left: 25%;
+  top: 20%;
+}
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#trackImage {
+  position: absolute;
+  left: 0px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 1; /* Ensure the track image stays on top */
+  transition: transform 0.5s linear; /* Smooth transition when stopping rotation */
+}
+
+/* Class to rotate the image */
+.rotate {
+  animation: rotate 10s linear infinite; /* 5 seconds for one full rotation, adjust as needed */
 }

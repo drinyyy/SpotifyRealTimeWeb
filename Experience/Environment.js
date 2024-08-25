@@ -31,7 +31,7 @@ export default class Environment {
     }
 
     setAmbientLightRoom1() {
-        this.ambientLight = new THREE.AmbientLight("#FFFFFF", 0.1);
+        this.ambientLight = new THREE.AmbientLight("#FFFFFF", 0.5);
         this.scene.add(this.ambientLight);
         
         this.fog = new THREE.FogExp2(0xD5EDF2, 0.0001);

@@ -2,9 +2,14 @@ export default [
     {
         name: "flower",
         type: "glbModel",
-        path: "/models/flower3.glb",
+        path: "/models/sunflower.glb",
     },
 
+    {
+        name: "daisy",
+        type: "glbModel",
+        path: "/models/daisy.glb",
+    },
    
     {
         name: "me",

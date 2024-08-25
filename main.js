@@ -68,160 +68,112 @@ document.addEventListener('mouseup', function() {
     document.removeEventListener('mousemove', moveDot);
 });
 
-const clientId = 'c22592c67d3b410b9adf4663b836114f';
-const redirectUri = 'https://peaceful-background.vercel.app/';
-const scopes = 'streaming user-read-email user-read-private user-read-playback-state user-modify-playback-state';
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize the SoundCloud player
+    var iframeElement = document.getElementById('soundcloud-player');
+    var widget = SC.Widget(iframeElement);
 
-let player;
-let deviceId;
+    // Get DOM elements for controls
+    var playPauseButton = document.getElementById('playPauseButton');
+    var prevButton = document.getElementById('prevButton');
+    var nextButton = document.getElementById('nextButton');
+    var trackNameDisplay = document.getElementById('trackName');
+    var trackImageDisplay = document.getElementById('trackImage');
+    var backgroundImageDisplay = document.getElementById('backgroundImage');
+    var playPauseIcon = playPauseButton.querySelector('.material-icons');
 
-function getTokenFromUrl() {
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    return params.get('access_token');
-}
+    // Set initial state
+    var isPlaying = false;
+    var currentRotation = 0; // Track the current rotation angle
+    var rotationSpeed = 0.05; // Adjust the speed of rotation
+    var animationFrameId;
 
-function redirectToSpotifyAuth() {
-    const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${clientId}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    window.location.href = authUrl;
-}
+    // Function to rotate the image
+    function rotateImage() {
+        if (isPlaying) {
+            currentRotation += rotationSpeed; // Increase the rotation angle
+            trackImageDisplay.style.transform = `rotate(${currentRotation}deg)`; // Apply rotation
 
-function setupSpotifyPlayer(token) {
-    window.onSpotifyWebPlaybackSDKReady = () => {
-        player = new Spotify.Player({
-            name: 'Web Playback SDK Quick Start Player',
-            getOAuthToken: cb => { cb(token); },
-            volume: 0.5
-        });
-
-        // Ready
-        player.addListener('ready', ({ device_id }) => {
-            console.log('Ready with Device ID', device_id);
-            deviceId = device_id;
-            enableControls();
-            startPlayback(token, device_id);
-        });
-
-        // Not Ready
-        player.addListener('not_ready', ({ device_id }) => {
-            console.log('Device ID has gone offline', device_id);
-            disableControls();
-        });
-
-        // Player State Changed
-        player.addListener('player_state_changed', state => {
-            if (state) {
-                document.getElementById('track-name').textContent = state.track_window.current_track.name;
-                document.getElementById('track-artist').textContent = state.track_window.current_track.artists[0].name;
-                
-                const playPauseIcon = document.getElementById('play-pause-icon');
-                if (state.paused) {
-                    playPauseIcon.textContent = 'play_arrow';
-                } else {
-                    playPauseIcon.textContent = 'pause';
-                }
-            }
-        });
-
-        // Error handling
-        player.on('initialization_error', ({ message }) => {
-            console.error('Failed to initialize', message);
-        });
-        player.on('authentication_error', ({ message }) => {
-            console.error('Failed to authenticate', message);
-            redirectToSpotifyAuth();
-        });
-        player.on('account_error', ({ message }) => {
-            console.error('Failed to validate Spotify account', message);
-        });
-        player.on('playback_error', ({ message }) => {
-            console.error('Failed to perform playback', message);
-        });
-
-        player.connect().then(success => {
-            if (success) {
-                console.log('The Web Playback SDK successfully connected to Spotify!');
-            }
-        });
-    };
-}
-
-function enableControls() {
-    document.getElementById('play-pause').disabled = false;
-    document.getElementById('next-track').disabled = false;
-    document.getElementById('previous-track').disabled = false;
-}
-
-function disableControls() {
-    document.getElementById('play-pause').disabled = true;
-    document.getElementById('next-track').disabled = true;
-    document.getElementById('previous-track').disabled = true;
-}
-
-async function startPlayback(token, device_id) {
-    const playlistUri = 'spotify:playlist:2tDsxJAuDXeenhCpHAzSfz';
-    
-    try {
-        const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${device_id}`, {
-            method: 'PUT',
-            body: JSON.stringify({ context_uri: playlistUri }),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            animationFrameId = requestAnimationFrame(rotateImage); // Continue the animation
         }
-        
-        console.log('Playback started successfully');
-    } catch (e) {
-        console.error('Error starting playback:', e);
     }
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    const token = getTokenFromUrl();
-    
-    if (!token) {
-        redirectToSpotifyAuth();
-    } else {
-        localStorage.setItem('spotifyAccessToken', token);
-        setupSpotifyPlayer(token);
-
-        document.getElementById('play-pause').addEventListener('click', () => {
-            if (player) {
-                player.togglePlay().then(() => {
-                    console.log('Toggled playback!');
-                    const playPauseIcon = document.getElementById('play-pause-icon');
-                    player.getCurrentState().then(state => {
-                        if (state.paused) {
-                            playPauseIcon.textContent = 'play_arrow';
-                        } else {
-                            playPauseIcon.textContent = 'pause';
-                        }
-                    });
-                });
+    // Play/Pause button functionality
+    playPauseButton.addEventListener('click', function () {
+        widget.isPaused(function (isPaused) {
+            if (isPaused) {
+                widget.play();
+                playPauseIcon.textContent = 'pause'; // Change icon to 'pause'
+                isPlaying = true;
+                rotateImage(); // Start rotating
+            } else {
+                widget.pause();
+                playPauseIcon.textContent = 'play_arrow'; // Change icon to 'play_arrow'
+                isPlaying = false;
+                cancelAnimationFrame(animationFrameId); // Stop rotating
             }
         });
+    });
 
-        document.getElementById('next-track').addEventListener('click', () => {
-            if (player) {
-                player.nextTrack().then(() => {
-                    console.log('Skipped to next track!');
-                });
-            }
-        });
+    // Next button functionality
+    nextButton.addEventListener('click', function () {
+        if (isPlaying) {
+            cancelAnimationFrame(animationFrameId); // Stop any ongoing rotation
+        }
+        widget.next(); // Move to the next track
+        if (isPlaying) {
+            rotateImage(); // Restart rotating if it was playing
+        }
+    });
 
-        document.getElementById('previous-track').addEventListener('click', () => {
-            if (player) {
-                player.previousTrack().then(() => {
-                    console.log('Skipped to previous track!');
-                });
-            }
-        });
+    // Previous button functionality
+    prevButton.addEventListener('click', function () {
+        if (isPlaying) {
+            cancelAnimationFrame(animationFrameId); // Stop any ongoing rotation
+        }
+        widget.prev(); // Move to the previous track
+        if (isPlaying) {
+            rotateImage(); // Restart rotating if it was playing
+        }
+    });
+
+    // Function to update track information
+    function updateTrackInfo(currentSound) {
+        trackNameDisplay.textContent = currentSound.title;
+
+        // Set track and background images if available
+        if (currentSound.artwork_url) {
+            var artworkUrl = currentSound.artwork_url.replace('-large', '-t500x500');
+            trackImageDisplay.src = artworkUrl;
+            backgroundImageDisplay.src = artworkUrl; // Set background image
+        } else {
+            trackImageDisplay.src = ''; // Set to a default image or blank if no artwork
+            backgroundImageDisplay.src = ''; // Set background image to default or blank
+        }
     }
+
+    // Update track information on player ready
+    widget.bind(SC.Widget.Events.READY, function () {
+        widget.getCurrentSound(function (currentSound) {
+            updateTrackInfo(currentSound);
+        });
+    });
+
+    // Update track information on track change
+    widget.bind(SC.Widget.Events.PLAY, function () {
+        widget.getCurrentSound(function (currentSound) {
+            updateTrackInfo(currentSound);
+        });
+    });
+
+    // Automatically start/stop rotation when the track is played/paused via widget events
+    widget.bind(SC.Widget.Events.PLAY, function () {
+        isPlaying = true;
+        rotateImage(); // Start rotating
+    });
+
+    widget.bind(SC.Widget.Events.PAUSE, function () {
+        isPlaying = false;
+        cancelAnimationFrame(animationFrameId); // Stop rotating
+    });
 });
-
-
