@@ -13,7 +13,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
+  user-select: none; /* Prevent text selection */
+  -webkit-user-drag: none; /* Prevent dragging elements in Safari */
+  touch-action: none; /* Prevent default touch actions like scrolling */
  
   
 }
@@ -53,19 +55,7 @@
   display: none;
 }
 
-.corner-button {
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  background-color: #00000000;
-  color: #000000;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+
 
 
 .curve-container {
@@ -88,18 +78,20 @@ svg {
 }
 
 
-
+.soundcloud-player{
+  display: none;
+}
 .custom-controls {
-  z-index: 10; /* Add z-index to ensure it's on top */
+  z-index: 10;
   position: absolute;
-  right: 20%;
+  top: 30%;
+  right: 10%;
   margin-top: 10px;
-  text-align: left; /* Changed to left to align contents */
-  
+  text-align: left;
   width: 500px;
   height: 100px;
-  
 }
+
 .custom-controls .background-blur {
   position: absolute;
   top: 0;
@@ -107,11 +99,12 @@ svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: blur(5px); /* Adjust blur effect */
-  z-index: -1; /* Ensure it stays behind other content */
+  filter: blur(5px);
+  z-index: -1;
   border-radius: 50px;
   opacity: 0.5;
 }
+
 .custom-controls button {
   border: none;
   position: relative;
@@ -132,6 +125,7 @@ svg {
   left: 25%;
   top: 20%;
 }
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -144,15 +138,86 @@ svg {
 #trackImage {
   position: absolute;
   left: 0px;
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  z-index: 1; /* Ensure the track image stays on top */
-  transition: transform 0.5s linear; /* Smooth transition when stopping rotation */
+  z-index: 1;
+  transition: transform 0.5s linear;
+  filter: drop-shadow(5px -5px 5px #2d2d2e57);
 }
 
-/* Class to rotate the image */
 .rotate {
-  animation: rotate 10s linear infinite; /* 5 seconds for one full rotation, adjust as needed */
+  animation: rotate 10s linear infinite;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1024px) {
+  .custom-controls {
+    right: 10%;
+    width: 400px;
+    height: 80px;
+  }
+
+  #trackImage {
+    width: 80px;
+    height: 80px;
+  }
+
+  .custom-controls button {
+    padding: 15px;
+    font-size: 12px;
+  }
+
+  #trackInfo {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .custom-controls {
+    right: 5%;
+    width: 300px;
+    height: 60px;
+  }
+
+  #trackImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .custom-controls button {
+    padding: 10px;
+    font-size: 10px;
+    left: 15%;
+  }
+
+  #trackInfo {
+    font-size: 12px;
+    left: 20%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .custom-controls {
+    right: 2%;
+    width: 250px;
+    height: 50px;
+  }
+
+  #trackImage {
+    width: 50px;
+    height: 50px;
+  }
+
+  .custom-controls button {
+    padding: 8px;
+    font-size: 9px;
+    left: 10%;
+  }
+
+  #trackInfo {
+    font-size: 10px;
+    left: 20%;
+  }
 }

@@ -15,8 +15,10 @@ export default class Camera {
     }
 
     createPerspectiveCamera() {
+        const initialFOV = window.innerWidth < 648 ? 65 : 35;
+
         this.perspectiveCamera = new THREE.PerspectiveCamera(
-            35,
+            initialFOV,
             this.sizes.aspect,
             0.1,
             100
@@ -27,6 +29,7 @@ export default class Camera {
         console.log(this.perspectiveCamera.position)
         this.createCameraCurve();
 
+        
     //     const boxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     // const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
     // const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
@@ -55,6 +58,11 @@ export default class Camera {
     
 
     resize() {
+        if (window.innerWidth < 648) {
+            this.perspectiveCamera.fov = 55;
+        } else {
+            this.perspectiveCamera.fov = 35;
+        }
         // Updating Perspective Camera on Resize
         this.perspectiveCamera.aspect = this.sizes.aspect;
         this.perspectiveCamera.updateProjectionMatrix();

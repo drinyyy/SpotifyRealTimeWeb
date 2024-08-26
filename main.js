@@ -2,7 +2,6 @@ import './style.css';
 import Experience from './Experience/experience';
 
 const experience = new Experience(document.querySelector('.experience-canvas'));
-// Assuming the `dot` element and the `curve` are available in your HTML
 const dot = document.getElementById('dot');
 const curve = document.getElementById('curve');
 
@@ -11,6 +10,15 @@ function getMousePosition(evt) {
     return {
         x: (evt.clientX - CTM.e) / CTM.a,
         y: (evt.clientY - CTM.f) / CTM.d
+    };
+}
+
+function getTouchPosition(evt) {
+    const CTM = curve.getScreenCTM();
+    const touch = evt.touches[0];
+    return {
+        x: (touch.clientX - CTM.e) / CTM.a,
+        y: (touch.clientY - CTM.f) / CTM.d
     };
 }
 
@@ -34,10 +42,14 @@ function distance(point1, point2) {
 }
 
 function moveDot(evt) {
-    const mousePos = getMousePosition(evt);
-    const closestPoint = getClosestPointOnPath(curve, mousePos);
+    let mousePos;
+    if (evt.type === 'mousemove') {
+        mousePos = getMousePosition(evt);
+    } else if (evt.type === 'touchmove') {
+        mousePos = getTouchPosition(evt);
+    }
 
-    // Calculate the normalized position along the curve
+    const closestPoint = getClosestPointOnPath(curve, mousePos);
     const pathLength = curve.getTotalLength();
     let closestLength = 0;
     let closestDistance = distance(mousePos, curve.getPointAtLength(0));
@@ -53,20 +65,29 @@ function moveDot(evt) {
 
     const normalizedPosition = closestLength / pathLength;
 
-    // Update the Three.js camera position
     experience.camera.updateCameraPosition(normalizedPosition);
 
     dot.setAttribute('cx', closestPoint.x);
     dot.setAttribute('cy', closestPoint.y);
 }
 
-dot.addEventListener('mousedown', function() {
-    document.addEventListener('mousemove', moveDot);
-});
+function onDragStart(evt) {
+    evt.preventDefault(); // Prevent default behavior for touch events
+    if (evt.type === 'mousedown' || evt.type === 'touchstart') {
+        document.addEventListener('mousemove', moveDot);
+        document.addEventListener('touchmove', moveDot);
+    }
+}
 
-document.addEventListener('mouseup', function() {
+function onDragEnd() {
     document.removeEventListener('mousemove', moveDot);
-});
+    document.removeEventListener('touchmove', moveDot);
+}
+
+dot.addEventListener('mousedown', onDragStart);
+dot.addEventListener('touchstart', onDragStart);
+document.addEventListener('mouseup', onDragEnd);
+document.addEventListener('touchend', onDragEnd);
 
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize the SoundCloud player
@@ -84,18 +105,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Set initial state
     var isPlaying = false;
-    var currentRotation = 0; // Track the current rotation angle
-    var rotationSpeed = 0.05; // Adjust the speed of rotation
+    var currentRotation = 0;
+    var rotationSpeed = 0.05;
     var animationFrameId;
 
     // Function to rotate the image
     function rotateImage() {
         if (isPlaying) {
-            currentRotation += rotationSpeed; // Increase the rotation angle
-            trackImageDisplay.style.transform = `rotate(${currentRotation}deg)`; // Apply rotation
-
-            animationFrameId = requestAnimationFrame(rotateImage); // Continue the animation
+            currentRotation += rotationSpeed;
+            trackImageDisplay.style.transform = `rotate(${currentRotation}deg)`;
+            animationFrameId = requestAnimationFrame(rotateImage);
         }
+    }
+
+    function startRotation() {
+        if (!isPlaying) {
+            isPlaying = true;
+            rotateImage();
+        }
+    }
+
+    function stopRotation() {
+        isPlaying = false;
+        cancelAnimationFrame(animationFrameId);
     }
 
     // Play/Pause button functionality
@@ -103,38 +135,28 @@ document.addEventListener('DOMContentLoaded', function () {
         widget.isPaused(function (isPaused) {
             if (isPaused) {
                 widget.play();
-                playPauseIcon.textContent = 'pause'; // Change icon to 'pause'
-                isPlaying = true;
-                rotateImage(); // Start rotating
+                playPauseIcon.textContent = 'pause';
+                startRotation();
             } else {
                 widget.pause();
-                playPauseIcon.textContent = 'play_arrow'; // Change icon to 'play_arrow'
-                isPlaying = false;
-                cancelAnimationFrame(animationFrameId); // Stop rotating
+                playPauseIcon.textContent = 'play_arrow';
+                stopRotation();
             }
         });
     });
 
     // Next button functionality
     nextButton.addEventListener('click', function () {
-        if (isPlaying) {
-            cancelAnimationFrame(animationFrameId); // Stop any ongoing rotation
-        }
-        widget.next(); // Move to the next track
-        if (isPlaying) {
-            rotateImage(); // Restart rotating if it was playing
-        }
+        stopRotation();
+        widget.next();
+        startRotation();
     });
 
     // Previous button functionality
     prevButton.addEventListener('click', function () {
-        if (isPlaying) {
-            cancelAnimationFrame(animationFrameId); // Stop any ongoing rotation
-        }
-        widget.prev(); // Move to the previous track
-        if (isPlaying) {
-            rotateImage(); // Restart rotating if it was playing
-        }
+        stopRotation();
+        widget.prev();
+        startRotation();
     });
 
     // Function to update track information
@@ -145,10 +167,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (currentSound.artwork_url) {
             var artworkUrl = currentSound.artwork_url.replace('-large', '-t500x500');
             trackImageDisplay.src = artworkUrl;
-            backgroundImageDisplay.src = artworkUrl; // Set background image
+            backgroundImageDisplay.src = artworkUrl;
         } else {
             trackImageDisplay.src = ''; // Set to a default image or blank if no artwork
-            backgroundImageDisplay.src = ''; // Set background image to default or blank
+            backgroundImageDisplay.src = '';
         }
     }
 
@@ -164,16 +186,10 @@ document.addEventListener('DOMContentLoaded', function () {
         widget.getCurrentSound(function (currentSound) {
             updateTrackInfo(currentSound);
         });
-    });
-
-    // Automatically start/stop rotation when the track is played/paused via widget events
-    widget.bind(SC.Widget.Events.PLAY, function () {
-        isPlaying = true;
-        rotateImage(); // Start rotating
+        startRotation();
     });
 
     widget.bind(SC.Widget.Events.PAUSE, function () {
-        isPlaying = false;
-        cancelAnimationFrame(animationFrameId); // Stop rotating
+        stopRotation();
     });
 });

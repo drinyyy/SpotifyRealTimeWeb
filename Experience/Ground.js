@@ -56,20 +56,72 @@ export default class Ground {
    
     setFlowers() {
         const textureLoader = new THREE.TextureLoader();
-        this.AOTexture = textureLoader.load('/textures/Sunflower1.png');
-        this.AOTexture.flipY = false;
+    this.AOTexture = textureLoader.load('/textures/Sunflower.png');
+    this.AOTexture.flipY = false;
+
+    // Custom shader material for the wind effect
+    this.windShaderMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0 },
+            uTexture: { value: this.AOTexture },
+        },
+        vertexShader: `
+            uniform float uTime;
+varying vec2 vUv;
+
+void main() {
+    vUv = uv;
+
+    // Wind effect
+    vec3 transformed = position;
+
+    // Define the threshold for the wind effect (upper 70% of the flower)
+    float heightThreshold = 0.3; // Bottom 30% will not be affected (1 - 0.7)
     
-        // Prepare the flower model
-        this.actualFlower.traverse((child) => {
-    if (child.isMesh) {
-        child.material = new THREE.MeshBasicMaterial({ 
-            map: this.AOTexture, // Your texture
-            transparent: true,
-            side: THREE.DoubleSide, // Renders both sides of the mesh
-            alphaTest: 0.5 // Adjust this value as needed
-        });
-    }
-});
+    // Apply wind effect only to the upper part of the flower
+    float windStrength = 0.1; // Adjust the wind strength here
+
+    // Use a smoothstep function to create a gradual transition for the wind effect
+    float influence = smoothstep(heightThreshold, 1.0, transformed.y); // Smooth transition from 0% to 100% effect
+
+    // Calculate wind displacement in local space before applying instance rotation
+    float windOffset = sin(transformed.y * 0.3 + uTime) * windStrength * influence;
+    
+    // Transform the wind effect to account for instance rotation
+    vec3 windEffect = vec3(windOffset, 0.0, 0.0); // Wind effect in the local x direction
+    
+    // Apply the instance rotation
+    vec3 transformedPosition = (instanceMatrix * vec4(transformed + windEffect, 1.0)).xyz;
+    
+    // Final position after applying model view and projection matrices
+    vec4 mvPosition = modelViewMatrix * vec4(transformedPosition, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+}
+
+
+        `,
+        fragmentShader: `
+            uniform sampler2D uTexture;
+            varying vec2 vUv;
+
+            void main() {
+                vec4 color = texture2D(uTexture, vUv);
+
+                if (color.a < 0.5) discard; // Alpha test for transparency
+
+                gl_FragColor = color;
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide,
+    });
+
+    // Prepare the flower model with custom shader material
+    this.actualFlower.traverse((child) => {
+        if (child.isMesh) {
+            child.material = this.windShaderMaterial;
+        }
+    });
     
         // Debugging: Log the flower model structure
         
@@ -99,7 +151,7 @@ export default class Ground {
         const dummy = new THREE.Object3D();
         const matrices = [];
     
-        const flowerCount = 30; // Number of flowers to instance
+        const flowerCount = 50; // Number of flowers to instance
         const scaleFactor = Math.max(groundSize.x, groundSize.z) / 10;
         const positionOffset = new THREE.Vector3(3, 0, -1); // Adjust as needed
     
@@ -127,7 +179,7 @@ export default class Ground {
             // Check if the position is valid before placing the flower
             if (isPositionValid(tempPosition)) {
                 dummy.position.copy(tempPosition);
-                dummy.rotation.y = Math.random() * Math.PI * 2;
+                dummy.rotation.y =  Math.PI / 2;
                 dummy.scale.setScalar(0.6 * 0.7);
                 dummy.updateMatrix();
     
@@ -155,7 +207,7 @@ export default class Ground {
         flowerMeshes.forEach((mesh, index) => {
             const instancedFlower = new THREE.InstancedMesh(
                 mesh.geometry,
-                mesh.material,
+                this.windShaderMaterial,
                 flowerCount
             );
     
@@ -165,12 +217,18 @@ export default class Ground {
             });
     
             instancedFlower.instanceMatrix.needsUpdate = true;
-            instancedFlower.castShadow = true;
+            
             this.scene.add(instancedFlower);
             
         });
     }
     
+
+
+
+
+
+
 
     setFlowers1() {
         const textureLoader = new THREE.TextureLoader();
@@ -442,7 +500,7 @@ export default class Ground {
 
 
     update() {
-        
+        this.windShaderMaterial.uniforms.uTime.value += 0.001;
         this.grassMaterial.uniforms.time.value += 0.001;
        
     }
