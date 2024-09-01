@@ -34,7 +34,7 @@ export default class Environment {
         this.cloud();
         this.sky();
         this.createCircularSlider();
-        this.setupGUI(); // Add GUI setup
+        // this.setupGUI(); // Add GUI setup
 
     }
 
