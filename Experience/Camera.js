@@ -88,6 +88,8 @@ export default class Camera {
         });
     }
 
+    
+
     resize() {
         if (window.innerWidth < 648) {
             this.perspectiveCamera.fov = 55;
