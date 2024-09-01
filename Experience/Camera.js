@@ -82,7 +82,7 @@ export default class Camera {
         this.perspectiveCamera.lookAt(this.lookAtTarget);
 
         // Reset isMoving state after some delay
-        gsap.delayedCall(0.5, () => {
+        gsap.delayedCall(1.0, () => {
             this.isMoving = false;
             this.parallaxTimeline.play(); // Resume parallax effect
         });

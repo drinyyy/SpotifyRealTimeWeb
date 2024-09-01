@@ -10,7 +10,7 @@ const params = {
     color2: '#D5EDF2',
     opacity1: 1.0,
     opacity2: 1.0,
-    opacity3: 1.0,
+    cloudOpacity: 1.0,
     rotationY: Math.PI / 2,
     blendPosition: 0.25,
     pointLightColor: '#FFFFFF',
@@ -64,7 +64,7 @@ export default class Environment {
         this.cloudTexture.flipY = false;
 
         this.cloudGeometry = new THREE.PlaneGeometry(10, 6); 
-        this.cloudMaterial = new THREE.MeshBasicMaterial({ map: this.cloudTexture, transparent: true ,opacity:params.opacity3});
+        this.cloudMaterial = new THREE.MeshBasicMaterial({ map: this.cloudTexture, transparent: true ,opacity: this.params.cloudOpacity});
         this.cloud = new THREE.Mesh(this.cloudGeometry, this.cloudMaterial);
         this.cloud.position.set(-4.5, 1.64, -1.3);
         this.cloud.rotation.set( 0,Math.PI /2, 3, )
@@ -250,20 +250,20 @@ export default class Environment {
             // Update ambient light intensity
             const normalizedAngle = angle / (2 * Math.PI);
     
-            let newAmbientIntensity, newPointLightIntensity, newFillLightIntensity, newCloudIntensity, newBackgroundOpacity1, newBackgroundOpacity2;
+            let newAmbientIntensity, newPointLightIntensity, newFillLightIntensity, newCloudOpacity, newBackgroundOpacity1, newBackgroundOpacity2;
     
             if (normalizedAngle <= 0.5) {
                 newAmbientIntensity = 1.1 - (normalizedAngle * 2 * 0.9);
                 newFillLightIntensity = normalizedAngle * 2 * 0.3;
                 newPointLightIntensity = 167 - (normalizedAngle * 2 * 142); 
-                newCloudIntensity = 1.0 - (normalizedAngle * 2 * 0.9);
+                newCloudOpacity = 1.0 - (normalizedAngle * 2 * 0.9);
                 newBackgroundOpacity1 = 1.0 - (normalizedAngle * 2 * 0.9);
                 newBackgroundOpacity2 = 1.0 - (normalizedAngle * 2 * 0.9);
             } else {
                 newAmbientIntensity = 0.2 + ((normalizedAngle - 0.5) * 2 * 0.9);
                 newFillLightIntensity = 0.3 - ((normalizedAngle - 0.5) * 2 * 0.3);
                 newPointLightIntensity = 25 + ((normalizedAngle - 0.5) * 2 * 142);
-                newCloudIntensity = 0.1 + ((normalizedAngle - 0.5) * 2 * 1.0);
+                newCloudOpacity = 0.1 + ((normalizedAngle - 0.5) * 2 * 0.9);
                 newBackgroundOpacity1 = 0.1 + ((normalizedAngle - 0.5) * 2 * 0.9);
                 newBackgroundOpacity2 = 0.1 + ((normalizedAngle - 0.5) * 2 * 0.9);
             }
@@ -273,7 +273,7 @@ export default class Environment {
                 ambientLightIntensity: newAmbientIntensity,
                 pointLightIntensity: newFillLightIntensity,
                 pointLightIntensity2: newPointLightIntensity,
-                cloudIntensity: newCloudIntensity,
+                cloudOpacity: newCloudOpacity,
                 opacity1: newBackgroundOpacity1,
                 opacity2: newBackgroundOpacity2,
                 duration: 0.3,
@@ -282,7 +282,7 @@ export default class Environment {
                     this.ambientLight.intensity = this.params.ambientLightIntensity;
                     this.pointlight.intensity = this.params.pointLightIntensity;
                     this.pointlight2.intensity = this.params.pointLightIntensity2;
-                    this.cloudMaterial.opacity = this.params.cloudIntensity;
+                    this.cloudMaterial.opacity = this.params.cloudOpacity;
                     this.material.uniforms.opacity1.value = this.params.opacity1;
                     this.material.uniforms.opacity2.value = this.params.opacity2;
                 }

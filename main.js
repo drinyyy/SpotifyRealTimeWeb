@@ -1,6 +1,6 @@
 import './style.css';
 import Experience from './Experience/experience';
-
+import gsap from 'gsap';
 const experience = new Experience(document.querySelector('.experience-canvas'));
 const dot = document.getElementById('dot');
 const curve = document.getElementById('curve');
@@ -67,8 +67,13 @@ function moveDot(evt) {
 
     experience.camera.updateCameraPosition(normalizedPosition);
 
-    dot.setAttribute('cx', closestPoint.x);
-    dot.setAttribute('cy', closestPoint.y);
+    // Use GSAP to animate the dot's position
+    gsap.to(dot, {
+        attr: { cx: closestPoint.x, cy: closestPoint.y },
+        duration: 0.5, // Animation duration in seconds
+        ease: "power2.out", // Easing function for smooth movement
+        delay: 0.1 // Delay before the animation starts
+    });
 }
 
 function onDragStart(evt) {
@@ -90,9 +95,31 @@ document.addEventListener('mouseup', onDragEnd);
 document.addEventListener('touchend', onDragEnd);
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Create and insert the SoundCloud iframe
+    function decodeUrl(encodedUrl) {
+        return atob(encodedUrl);
+    }
+
+    // Obfuscated SoundCloud URL (Base64 encoded)
+    var encodedUrl = 'aHR0cHM6Ly9zb3VuZGNsb3VkLmNvbS9kcmluLWxhamNpL3NldHMvY2hpbGxzdGF0aW9u';
+    
+    // Decode the URL
+    var decodedUrl = decodeUrl(encodedUrl);
+
+    // Create and insert the SoundCloud iframe
+    var soundcloudPlayerContainer = document.getElementById('soundcloud-player-container');
+    var iframe = document.createElement('iframe');
+    iframe.id = 'soundcloud-player';
+    iframe.width = '100%';
+    iframe.height = '166';
+    iframe.scrolling = 'no';
+    iframe.frameBorder = 'no';
+    iframe.allow = 'autoplay';
+    iframe.src = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(decodedUrl) + '&auto_play=false&hide_related=false&show_comments=false&show_user=false&show_reposts=false&visual=false';
+    soundcloudPlayerContainer.appendChild(iframe);
+
     // Initialize the SoundCloud player
-    var iframeElement = document.getElementById('soundcloud-player');
-    var widget = SC.Widget(iframeElement);
+    var widget = SC.Widget(iframe);
 
     // Get DOM elements for controls
     var playPauseButton = document.getElementById('playPauseButton');
@@ -103,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var backgroundImageDisplay = document.getElementById('backgroundImage');
     var playPauseIcon = playPauseButton.querySelector('.material-icons');
 
-    
     // Set initial state
     var isPlaying = false;
     var currentRotation = 0;

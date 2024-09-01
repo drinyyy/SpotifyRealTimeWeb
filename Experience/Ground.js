@@ -25,7 +25,7 @@ export default class Ground {
         this.actualDaisy = this.daisy.scene;
         this.environment = this.experience.world.environment
 
-        console.log(this.environment.ambientLight)
+       
         this.setGround();
       
         this.setFlowers();
