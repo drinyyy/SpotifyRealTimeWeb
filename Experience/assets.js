@@ -18,6 +18,12 @@ export default [
     },
 
     {
+        name: "trunk",
+        type: "glbModel",
+        path: "/models/trunk.glb",
+    },
+
+    {
         name: "mecollision",
         type: "glbModel",
         path: "/models/meCollision.glb",
@@ -37,5 +43,38 @@ export default [
         name: "ground",
         type: "glbModel",
         path: "/models/ground.glb",
+    },
+
+    {
+        name: "sunflowerTexture",
+        type: "texture",
+        path: "/textures/Sunflower.png",
+    },
+    {
+        name: "daisyTexture",
+        type: "texture",
+        path: "/textures/Daisy.png",
+    },
+
+    {
+        name: "pantsTexture",
+        type: "texture",
+        path: "/textures/pants.png",
+    },
+    {
+        name: "meTexture",
+        type: "texture",
+        path: "/textures/meAO.png",
+    },
+
+    {
+        name: "trunkTexture",
+        type: "texture",
+        path: "/textures/trunk1.png",
+    },
+    {
+        name: "perlinTexture",
+        type: "texture",
+        path: "/textures/perlin.png",
     },
 ];

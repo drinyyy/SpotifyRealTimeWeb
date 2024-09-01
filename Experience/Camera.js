@@ -10,8 +10,11 @@ export default class Camera {
         this.scene = this.experience.scene;
         this.canvas = this.experience.canvas;
 
+        this.isMoving = false; // To track if the camera is moving
+        this.lookAtTarget = new THREE.Vector3(1, 0.5, 0); // Initial lookAt target
+
         this.createPerspectiveCamera();
-        
+        this.initParallaxEffect(); // Initialize parallax effect
     }
 
     createPerspectiveCamera() {
@@ -24,19 +27,12 @@ export default class Camera {
             100
         );
         this.scene.add(this.perspectiveCamera);
-        this.perspectiveCamera.position.set(3.58, 0.239, 1.82);  
-        this.perspectiveCamera.lookAt(new THREE.Vector3(1, 0.5, 0));
-        console.log(this.perspectiveCamera.position)
-        this.createCameraCurve();
-
+        this.perspectiveCamera.position.set(3.58, 0.239, 1.82);
+        this.perspectiveCamera.lookAt(this.lookAtTarget);
         
-    //     const boxGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    // const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color
-    // const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-    // boxMesh.position.set(1.0, 0.7, 0.5); // Place the box at the target location
-    // this.scene.add(boxMesh);
+        this.createCameraCurve();
     }
-    
+
     createCameraCurve() {
         this.cameraCurve = new THREE.CatmullRomCurve3([
             new THREE.Vector3(3.17, 0.45, 2),
@@ -46,16 +42,51 @@ export default class Camera {
             new THREE.Vector3(3.80, 0.35, 1.0),
         ]);
     }
+
+    initParallaxEffect() {
+        this.parallaxTimeline = gsap.timeline({ repeat: -1, paused: true });
     
+        // Calculate the original target position
+        const originalPosition = this.lookAtTarget.clone();
+    
+        this.parallaxTimeline.to(this.lookAtTarget, {
+            x: '+=0.1',
+            y: '+=0.05',
+            duration: 5,
+            ease: 'power1.inOut'
+        });
+    
+        this.parallaxTimeline.to(this.lookAtTarget, {
+            x: '-=0.2',
+            y: '-=0.01',
+            duration: 5,
+            ease: 'power1.inOut'
+        });
+    
+        this.parallaxTimeline.to(this.lookAtTarget, {
+            x: originalPosition.x,
+            y: originalPosition.y,
+            duration: 5,
+            ease: 'power1.inOut'
+        });
+    
+        this.parallaxTimeline.play();
+    }
+
     updateCameraPosition(dotPosition) {
+        this.isMoving = true; // Camera is moving
+        this.parallaxTimeline.pause(); // Stop parallax effect
+
         const pointOnCurve = this.cameraCurve.getPoint(dotPosition);
         this.perspectiveCamera.position.copy(pointOnCurve);
-        this.perspectiveCamera.lookAt(new THREE.Vector3(1, 0.5, 0));
+        this.perspectiveCamera.lookAt(this.lookAtTarget);
+
+        // Reset isMoving state after some delay
+        gsap.delayedCall(0.5, () => {
+            this.isMoving = false;
+            this.parallaxTimeline.play(); // Resume parallax effect
+        });
     }
-    
-    // Call updateCameraPosition with the normalized dot position
-    
-    
 
     resize() {
         if (window.innerWidth < 648) {
@@ -69,8 +100,11 @@ export default class Camera {
     }
 
     update() {
+        // Update the camera's lookAt to follow the moving target
+        this.perspectiveCamera.lookAt(this.lookAtTarget);
         
-       
-      
+        if (!this.isMoving) {
+            this.parallaxTimeline.play(); // Continue parallax effect if not moving
+        }
     }
 }

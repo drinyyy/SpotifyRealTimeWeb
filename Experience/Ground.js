@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import * as THREE from "three";
+import Environment from "./Environment.js";
 
 import Experience from "./experience";
 import grassVertexShader from "./vertex.glsl"
@@ -16,27 +17,30 @@ export default class Ground {
 
         this.ground = this.resources.items.ground;
         this.actualGround = this.ground.scene;
-
+        
         this.flower = this.resources.items.flower;
         this.actualFlower = this.flower.scene;
 
         this.daisy = this.resources.items.daisy;
         this.actualDaisy = this.daisy.scene;
+        this.environment = this.experience.world.environment
 
-        
-
+        console.log(this.environment.ambientLight)
         this.setGround();
-        
+      
         this.setFlowers();
         this.setFlowers1();
         this.setGrass();
         // this.placeCubes();
         // this.setGUI();
+
+
+        
     }
 
     setGround() {
         this.actualGround.position.set(3, 0, -1);
-        this.groundMaterial = new THREE.MeshBasicMaterial({color:0x27601F})
+        this.groundMaterial = new THREE.MeshStandardMaterial({color:0x27601F})
         this.actualGround.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
@@ -55,19 +59,24 @@ export default class Ground {
 
    
     setFlowers() {
-        const textureLoader = new THREE.TextureLoader();
-    this.AOTexture = textureLoader.load('/textures/Sunflower.png');
-    this.AOTexture.flipY = false;
+        this.AOTexture = this.resources.items.sunflowerTexture;
+        this.AOTexture.flipY = false;
 
     // Custom shader material for the wind effect
-    this.windShaderMaterial = new THREE.ShaderMaterial({
+    this.flowerShaderMaterial = new THREE.ShaderMaterial({
         uniforms: {
             uTime: { value: 0 },
             uTexture: { value: this.AOTexture },
+            ambientLightColor: { value: new THREE.Color(this.environment.params.ambientLightColor) },
+            ambientLightIntensity: { value: this.environment.params.ambientLightIntensity },
+            pointLightColor: { value: new THREE.Color(this.environment.params.pointLightColor) },
+            pointLightIntensity: { value: this.environment.params.pointLightIntensity },
+            pointLightPosition: { value: new THREE.Vector3() }
         },
         vertexShader: `
             uniform float uTime;
 varying vec2 vUv;
+varying vec3 vWorldPosition; // To pass the world position to the fragment shader
 
 void main() {
     vUv = uv;
@@ -77,7 +86,7 @@ void main() {
 
     // Define the threshold for the wind effect (upper 70% of the flower)
     float heightThreshold = 0.3; // Bottom 30% will not be affected (1 - 0.7)
-    
+
     // Apply wind effect only to the upper part of the flower
     float windStrength = 0.1; // Adjust the wind strength here
 
@@ -86,31 +95,52 @@ void main() {
 
     // Calculate wind displacement in local space before applying instance rotation
     float windOffset = sin(transformed.y * 0.3 + uTime) * windStrength * influence;
-    
+
     // Transform the wind effect to account for instance rotation
     vec3 windEffect = vec3(windOffset, 0.0, 0.0); // Wind effect in the local x direction
-    
+
     // Apply the instance rotation
     vec3 transformedPosition = (instanceMatrix * vec4(transformed + windEffect, 1.0)).xyz;
-    
+
+    // Output the world position for lighting calculations
+    vWorldPosition = (modelMatrix * vec4(transformedPosition, 1.0)).xyz;
+
     // Final position after applying model view and projection matrices
     vec4 mvPosition = modelViewMatrix * vec4(transformedPosition, 1.0);
     gl_Position = projectionMatrix * mvPosition;
 }
 
 
+
         `,
         fragmentShader: `
             uniform sampler2D uTexture;
-            varying vec2 vUv;
+uniform vec3 ambientLightColor;
+uniform float ambientLightIntensity;
+uniform vec3 pointLightColor;
+uniform float pointLightIntensity;
+uniform vec3 pointLightPosition;
 
-            void main() {
-                vec4 color = texture2D(uTexture, vUv);
+varying vec2 vUv;
+varying vec3 vWorldPosition; 
 
-                if (color.a < 0.5) discard; // Alpha test for transparency
+void main() {
+    vec4 color = texture2D(uTexture, vUv);
 
-                gl_FragColor = color;
-            }
+    if (color.a < 0.5) discard; // Alpha test for transparency
+
+    // Ambient lighting
+    vec3 ambient = ambientLightColor * ambientLightIntensity;
+
+    // Point light calculation
+    
+
+    // Apply lighting to the texture color
+    vec3 finalColor = color.rgb * ambient ;
+
+    gl_FragColor = vec4(finalColor, color.a); // Preserve original alpha
+}
+
         `,
         transparent: true,
         side: THREE.DoubleSide,
@@ -119,7 +149,7 @@ void main() {
     // Prepare the flower model with custom shader material
     this.actualFlower.traverse((child) => {
         if (child.isMesh) {
-            child.material = this.windShaderMaterial;
+            child.material = this.flowerShaderMaterial;
         }
     });
     
@@ -207,7 +237,7 @@ void main() {
         flowerMeshes.forEach((mesh, index) => {
             const instancedFlower = new THREE.InstancedMesh(
                 mesh.geometry,
-                this.windShaderMaterial,
+                this.flowerShaderMaterial,
                 flowerCount
             );
     
@@ -231,15 +261,14 @@ void main() {
 
 
     setFlowers1() {
-        const textureLoader = new THREE.TextureLoader();
-        this.AOTexture = textureLoader.load('/textures/Daisy.png');
-        this.AOTexture.flipY = false;
+        this.Texture = this.resources.items.daisyTexture;
+        this.Texture.flipY = false;
     
         // Prepare the flower model
         this.actualDaisy.traverse((child) => {
     if (child.isMesh) {
-        child.material = new THREE.MeshBasicMaterial({ 
-            map: this.AOTexture, // Your texture
+        child.material = new THREE.MeshStandardMaterial({ 
+            map: this.Texture, // Your texture
             transparent: true,
             side: THREE.DoubleSide, // Renders both sides of the mesh
             alphaTest: 0.5 // Adjust this value as needed
@@ -369,8 +398,8 @@ void main() {
         
     
         const grassCount = 100000;
-        const grassHeight = 0.2;
-        const grassWidth = 0.02;
+        const grassHeight = 0.21;
+        const grassWidth = 0.025;
         const segments = 8; // Number of segments in the blade
     
         // Create a custom geometry for the grass blade with more segments
@@ -416,6 +445,15 @@ void main() {
         grassColorLow: { value: new THREE.Color(0.066, 0.324, 0.054) },
         grassColorMid:{ value: new THREE.Color(0.779, 0.779, 0.508) }, // Default low color
         grassColorHigh: { value: new THREE.Color(0.9, 0.5, 0.15) },
+        pointLightRadius: {value: 5.0}, // New uniform for light falloff control
+        
+        ambientLightColor: { value: new THREE.Color(this.environment.params.ambientLightColor) },
+        ambientLightIntensity: { value: this.environment.params.ambientLightIntensity },
+
+        pointLightColor: { value: new THREE.Color(this.environment.params.pointLightColor) },
+        pointLightIntensity: { value: 0.5 },
+        pointLightPosition: { value: new THREE.Vector3(this.environment.params.pointLightPositionX, this.environment.params.pointLightPositionY, this.environment.params.pointLightPositionZ) },
+
        
     },
 });
@@ -500,8 +538,34 @@ void main() {
 
 
     update() {
-        this.windShaderMaterial.uniforms.uTime.value += 0.001;
+        this.flowerShaderMaterial.uniforms.uTime.value += 0.001;
         this.grassMaterial.uniforms.time.value += 0.001;
-       
+        
+
+        this.grassMaterial.uniforms.ambientLightColor.value.set(this.environment.params.ambientLightColor);
+        this.grassMaterial.uniforms.ambientLightIntensity.value = this.environment.params.ambientLightIntensity;
+
+        
+
+        
+        
+
+
+
+        // this.grassMaterial.uniforms.pointLightPositionX.value.set(this.environment.params.pointLightPositionX);
+        // this.grassMaterial.uniforms.pointLightPositionX.value = this.environment.params.pointLightPositionX;
+
+        // this.grassMaterial.uniforms.pointLightPositionY.value.set(this.environment.params.pointLightPositionY);
+        // this.grassMaterial.uniforms.pointLightPositionY.value = this.environment.params.pointLightPositionY;
+
+        // this.grassMaterial.uniforms.pointLightPositionZ.value.set(this.environment.params.pointLightPositionZ);
+        // this.grassMaterial.uniforms.pointLightPositionZ.value = this.environment.params.pointLightPositionZ;
+
+
+        
+
+        this.flowerShaderMaterial.uniforms.ambientLightColor.value.set(this.environment.params.ambientLightColor);
+        this.flowerShaderMaterial.uniforms.ambientLightIntensity.value = this.environment.params.ambientLightIntensity;
+
     }
 }

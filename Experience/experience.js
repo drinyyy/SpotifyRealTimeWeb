@@ -6,7 +6,7 @@ import Renderer from './Renderer';
 import Resources from "./Resources.js";
 import assets from "./assets.js";
 import World from './World';
-
+import Preloader from "./Preloader.js";
 export default class Experience {
     static instance;
     constructor(canvas) {
@@ -21,12 +21,10 @@ export default class Experience {
         this.camera = new Camera();
         this.renderer = new Renderer();
         this.resources = new Resources(assets);
-        this.scene.background =new THREE.Color( 0xBBE2EC);
-        this.resources.on("ready", () => {
+        this.scene.background =new THREE.Color( 0x000000);
         this.world = new World();
-
-        
-    });
+        this.preloader = new Preloader();
+  
 
 
   
@@ -59,8 +57,8 @@ export default class Experience {
     }
 
     update() {
-
-
+        this.preloader.update();
+        this.camera.update();
         this.renderer.update();
         
         if (this.world) {

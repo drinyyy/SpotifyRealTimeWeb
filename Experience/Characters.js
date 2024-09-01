@@ -10,21 +10,25 @@ export default class Characters {
         
         this.me = this.resources.items.me;
         this.actualMe = this.me.scene;
-  
-        this.setModel();
+        
+        this.trunk = this.resources.items.trunk;
+        this.actualTrunk = this.trunk.scene;
+
+        this.charactermodel();
+        this.trunkmodel();
     }
 
-    setModel(){
-        const textureLoader = new THREE.TextureLoader();
-        this.AOTexture = textureLoader.load('/textures/meAO.png');
-        this.AOTexture.flipY = false;
-        
-        this.pants = textureLoader.load('/textures/pants.png');
+    
+    charactermodel(){
+        this.meAO = this.resources.items.meTexture;
+        this.meAO.flipY = false;
+
+        this.pants = this.resources.items.pantsTexture;
         this.pants.flipY = false;
 
         this.actualMe.traverse((child) => { 
             if (child.isMesh) {
-                child.castShadow = true; // Enable shadow casting
+                child.castShadow = true; 
         
                 if (child.name === "pantsshoes") {
                     child.material = new THREE.MeshPhysicalMaterial({ map: this.pants });
@@ -36,7 +40,7 @@ export default class Characters {
                 }
 
                 if (child.name === "tie") {
-                    child.material = this.createTieMaterial(); // Apply the custom shader material to the tie
+                    child.material = this.createTieMaterial(); 
                 }
                 
             }
@@ -95,14 +99,30 @@ export default class Characters {
             side: THREE.DoubleSide,
         });
     }
+    trunkmodel(){
+        this.trunkTexture = this.resources.items.trunkTexture;
+        this.trunkTexture.flipY = false;
+
+        this.actualTrunk.traverse((child) => { 
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;  
+                 child.material = new THREE.MeshStandardMaterial({map: this.trunkTexture })
+            }
+        });
+       
+
+        this.actualTrunk.position.set(3, 0, -1);
+      
+        this.scene.add(this.actualTrunk);
+    }   
 
     update() {
         const tieMaterial = this.actualMe.getObjectByName("tie").material;
         
-        // Vary the waveAmplitude and waveFrequency over time
-        tieMaterial.uniforms.waveAmplitude.value = 4.0 + Math.sin(tieMaterial.uniforms.time.value * 0.1) * 1.0; // Amplitude varies between 3 and 5
-        tieMaterial.uniforms.waveFrequency.value = 0.01 + Math.sin(tieMaterial.uniforms.time.value * 0.15) * 0.005; // Frequency varies between 0.005 and 0.015
-        
-        tieMaterial.uniforms.time.value += 0.05; // Update the time uniform to animate the tie
+
+        tieMaterial.uniforms.waveAmplitude.value = 4.0 + Math.sin(tieMaterial.uniforms.time.value * 0.1) * 1.0; 
+        tieMaterial.uniforms.waveFrequency.value = 0.01 + Math.sin(tieMaterial.uniforms.time.value * 0.15) * 0.005; 
+        tieMaterial.uniforms.time.value += 0.05; 
     }
 }

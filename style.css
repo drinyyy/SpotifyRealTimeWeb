@@ -20,6 +20,49 @@
   
 }
 
+#intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'FontIntro', sans-serif;
+  color: #fff;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+#description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(20px);
+  overflow: hidden;
+  color: rgb(0, 0, 0);
+}
+
+#loading-percentage {
+  font-size: 1.5rem;
+  overflow: hidden;
+  color: rgb(0, 0, 0);
+}
+
+h1 {
+  color: rgb(0, 0, 0);
+  font-size: 4em;
+  margin-bottom: 1.5em;
+}
 
 .experience{
   position: fixed;
@@ -46,10 +89,6 @@
   src: url("textures/font.otf");
 }
 
-@font-face {
-  font-family: "FontIntro";
-  src: url("textures/IntroFont.ttf");
-}
 
 .hidden{
   display: none;
@@ -58,23 +97,48 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .curve-container {
-  width: 100%;
-  height: 200px;
   position: absolute;
+  width: 50%;
+  height: 50%;
+  
   overflow: hidden;
-  margin: 20px 0;
+  
   color: white;
-  top: 1px;
+  top: -5px;
+  left: 25%;
 }
-svg {
+/* svg {
   width: 100%;
   height: 100%;
   color: white;
-}
+} */
 .draggable-dot {
   fill: rgb(255, 255, 255);
   cursor: pointer;
+  width: 100%;
+  height: 100%;
+  
 }
 
 
@@ -99,19 +163,19 @@ svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: blur(5px);
+  filter: blur(8px);
   z-index: -1;
   border-radius: 50px;
-  opacity: 0.5;
+  opacity: 0.3;
 }
 
 .custom-controls button {
   border: none;
   position: relative;
-  top: 15%;
-  left: 19%;
+  top: 5%;
+  left: 17%;
   margin: 5px;
-  padding: 20px;
+  padding: 30px;
   font-size: 14px;
   cursor: pointer;
   background-color: rgba(255, 255, 255, 0);
@@ -167,6 +231,7 @@ svg {
   .custom-controls button {
     padding: 15px;
     font-size: 12px;
+    transform: scale(0.9);
   }
 
   #trackInfo {
@@ -187,14 +252,24 @@ svg {
   }
 
   .custom-controls button {
-    padding: 10px;
+    top: -5px;
+    padding: 20px;
     font-size: 10px;
-    left: 15%;
+    left: 12%;
+    transform: scale(0.7);
   }
 
   #trackInfo {
     font-size: 12px;
-    left: 20%;
+    left: 23%;
+    
+  }
+
+  .curve-container {
+    width: 80%;
+    height: 50%;
+    top: -5px;
+    left: 10%;
   }
 }
 
@@ -211,13 +286,27 @@ svg {
   }
 
   .custom-controls button {
-    padding: 8px;
+    top: -5px;
+    padding: 15px;
     font-size: 9px;
     left: 10%;
+    transform: scale(0.6);
   }
 
   #trackInfo {
     font-size: 10px;
-    left: 20%;
+    left: 21%;
+  }
+
+  .curve-container {
+    
+    width: 100%;
+    height: 50%;
+    
+    overflow: hidden;
+    
+    color: white;
+    top: -5px;
+    left: 1%;
   }
 }

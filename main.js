@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var backgroundImageDisplay = document.getElementById('backgroundImage');
     var playPauseIcon = playPauseButton.querySelector('.material-icons');
 
+    
     // Set initial state
     var isPlaying = false;
     var currentRotation = 0;
@@ -193,3 +194,8 @@ document.addEventListener('DOMContentLoaded', function () {
         stopRotation();
     });
 });
+
+
+
+
+        

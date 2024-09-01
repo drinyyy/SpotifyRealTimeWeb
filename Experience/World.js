@@ -5,7 +5,7 @@ import Environment from "./Environment.js";
 
 import Ground from "./Ground.js"
 import Characters from "./Characters.js"
-import Information from "./information.js"
+
 import { EventEmitter } from "events";
 export default class World  extends EventEmitter {
     constructor() {
@@ -17,28 +17,31 @@ export default class World  extends EventEmitter {
         this.camera = this.experience.camera;
         this.resources = this.experience.resources;
     
-        this.ground = new Ground();
-        this.Characters = new Characters();
-        this.environment = new Environment();
-        this.information = new Information();
+       
 
-        
+        this.resources.on("ready", () => {
+            this.environment = new Environment();
+            this.ground = new Ground();
+            this.Characters = new Characters();
+            
+            
+            this.emit("worldready");
+        });
 
         
     }
+
+    
     
 resize() {}
 
     update() {
+        
         if(this.ground){
             this.ground.update();
             
         }
-
-        if(this.information){
-            this.information.update();
-            
-        }
+        
         if(this.Characters){
             this.Characters.update();
             

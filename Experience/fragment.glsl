@@ -1,16 +1,21 @@
-uniform vec3 grassColorLow;   // Uniform for the low color (0.0 to 0.3)
-uniform vec3 grassColorMid;   // Uniform for the mid color (0.3 to 0.7)
-uniform vec3 grassColorHigh;  // Uniform for the high color (0.7 to 1.0)
+uniform vec3 grassColorLow;
+uniform vec3 grassColorMid;
+uniform vec3 grassColorHigh;
+uniform vec3 ambientLightColor;
+uniform float ambientLightIntensity;
+uniform vec3 pointLightColor;
+uniform float pointLightIntensity;
+uniform vec3 pointLightPosition;
+uniform float pointLightRadius; // New uniform for light falloff control
 
 varying vec2 vUv;
 varying float vHeight;
-varying float vAo; // Varying for ambient occlusion
+varying float vAo;
+varying vec3 vWorldPosition;
 
 void main() {
-    // Ensure vHeight is clamped between 0 and 1
+    // Color interpolation based on height (unchanged)
     float clampedHeight = clamp(vHeight, 0.0, 1.0);
-
-    // Determine which color range we're in and interpolate accordingly
     vec3 grassColor;
     if (clampedHeight < 0.3) {
         grassColor = mix(grassColorLow, grassColorMid, clampedHeight / 0.3);
@@ -20,16 +25,27 @@ void main() {
         grassColor = grassColorHigh;
     }
 
-    // Apply ambient occlusion to the grass color
-    float ao = mix(1.0, 0.95, vAo); // Reduced AO influence for testing
+    // Ambient lighting (unchanged)
+    vec3 ambient = ambientLightColor * ambientLightIntensity;
+
+    // Point light calculation
+    vec3 lightDir = normalize(pointLightPosition - vWorldPosition);
+    float distanceToLight = length(pointLightPosition - vWorldPosition);
+
+    // Calculate attenuation with a smooth falloff
+    float attenuation = 1.0 - smoothstep(0.0, pointLightRadius, distanceToLight);
+    attenuation = pow(attenuation, 2.0); // Square for a more pronounced falloff
+
+    // Calculate diffuse lighting
+    float diff = max(dot(lightDir, normalize(vec3(0.0, 1.0, 0.0))), 0.0);
+    vec3 diffuse = diff * pointLightColor * pointLightIntensity * attenuation;
+
+    // Apply ambient occlusion
+    float ao = mix(1.0, 0.95, vAo);
     grassColor *= ao;
 
-    // Specular effect, shinier at the top of the blade
-    float specularIntensity = mix(0.05, 0.5, clampedHeight); // Reduced specular for testing
-    vec3 specularColor = vec3(1.0) * specularIntensity;
-
-    // Final color with specular applied
-    vec3 finalColor = grassColor + specularColor * 0.5; // Reduced specular impact
+    // Final color with lighting applied
+    vec3 finalColor = grassColor * (ambient + diffuse);
 
     gl_FragColor = vec4(finalColor, 1.0);
 }

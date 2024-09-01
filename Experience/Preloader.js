@@ -14,12 +14,20 @@ export default class Preloader extends EventEmitter {
         this.resources = this.experience.resources;
         this.world = this.experience.world;
 
-        this.world.on("ready", () => {
-           
+        // Listen for the progress event from Resources
+        this.resources.on("progress", (progressRatio) => {
+            const progress = progressRatio * 100;
+            this.updateLoadingPercentage(progress);
+        });
+
+        // Listen for the ready event from Resources
+        this.resources.on("ready", () => {
             this.updateLoadingPercentage(100);
+        });
+
+        this.world.on("worldready", () => {
             setTimeout(() => {
                 this.hideIntro();
-               
             }, 1000);
         });
 
@@ -62,7 +70,7 @@ export default class Preloader extends EventEmitter {
         if (loadingPercentage) {
             gsap.to(loadingPercentage, {
                 duration: 0.5,
-                textContent: `${Math.round(progress)}%`,
+                textContent: `${Math.round(progress)}`,
                 snap: { textContent: 1 },
                 ease: "power1.inOut"
             });
@@ -103,7 +111,7 @@ export default class Preloader extends EventEmitter {
     }
 
     updateScene() {
-        
+        // Your updateScene logic here
     }
 
     resize() {}
