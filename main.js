@@ -2,130 +2,130 @@ import './style.css';
 import Experience from './Experience/experience';
 import gsap from 'gsap';
 const experience = new Experience(document.querySelector('.experience-canvas'));
-const dot = document.getElementById('dot');
-const curve = document.getElementById('curve');
+// const dot = document.getElementById('dot');
+// const curve = document.getElementById('curve');
 
-dot.addEventListener('mouseover', () => {
-  gsap.to(dot, {
-    duration: 0.2,
-    attr: { r: 3 }, // Increase radius to 3 on hover
-    ease: 'power1.out',
-  });
-});
+// dot.addEventListener('mouseover', () => {
+//   gsap.to(dot, {
+//     duration: 0.2,
+//     attr: { r: 3 }, // Increase radius to 3 on hover
+//     ease: 'power1.out',
+//   });
+// });
 
-dot.addEventListener('mouseout', () => {
-  if (!isDragging) { // Ensure it only reverts when not dragging
-    gsap.to(dot, {
-      duration: 0.2,
-      attr: { r: 2 }, // Revert radius to 2
-      ease: 'power1.out',
-    });
-  }
-});
+// dot.addEventListener('mouseout', () => {
+//   if (!isDragging) { // Ensure it only reverts when not dragging
+//     gsap.to(dot, {
+//       duration: 0.2,
+//       attr: { r: 2 }, // Revert radius to 2
+//       ease: 'power1.out',
+//     });
+//   }
+// });
 
-let isDragging = false; // Flag to track if dragging is in progress
+// let isDragging = false; // Flag to track if dragging is in progress
 
-function getMousePosition(evt) {
-  const CTM = curve.getScreenCTM();
-  return {
-    x: (evt.clientX - CTM.e) / CTM.a,
-    y: (evt.clientY - CTM.f) / CTM.d,
-  };
-}
+// function getMousePosition(evt) {
+//   const CTM = curve.getScreenCTM();
+//   return {
+//     x: (evt.clientX - CTM.e) / CTM.a,
+//     y: (evt.clientY - CTM.f) / CTM.d,
+//   };
+// }
 
-function getTouchPosition(evt) {
-  const CTM = curve.getScreenCTM();
-  const touch = evt.touches[0];
-  return {
-    x: (touch.clientX - CTM.e) / CTM.a,
-    y: (touch.clientY - CTM.f) / CTM.d,
-  };
-}
+// function getTouchPosition(evt) {
+//   const CTM = curve.getScreenCTM();
+//   const touch = evt.touches[0];
+//   return {
+//     x: (touch.clientX - CTM.e) / CTM.a,
+//     y: (touch.clientY - CTM.f) / CTM.d,
+//   };
+// }
 
-function distance(point1, point2) {
-  return Math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2);
-}
+// function distance(point1, point2) {
+//   return Math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2);
+// }
 
-function getClosestPointOnPath(path, point) {
-  const pathLength = path.getTotalLength();
-  let closestPoint = path.getPointAtLength(0);
-  let closestDistance = distance(point, closestPoint);
+// function getClosestPointOnPath(path, point) {
+//   const pathLength = path.getTotalLength();
+//   let closestPoint = path.getPointAtLength(0);
+//   let closestDistance = distance(point, closestPoint);
 
-  for (let i = 0; i <= pathLength; i++) {
-    const currentPoint = path.getPointAtLength(i);
-    const currentDistance = distance(point, currentPoint);
-    if (currentDistance < closestDistance) {
-      closestDistance = currentDistance;
-      closestPoint = currentPoint;
-    }
-  }
-  return closestPoint;
-}
+//   for (let i = 0; i <= pathLength; i++) {
+//     const currentPoint = path.getPointAtLength(i);
+//     const currentDistance = distance(point, currentPoint);
+//     if (currentDistance < closestDistance) {
+//       closestDistance = currentDistance;
+//       closestPoint = currentPoint;
+//     }
+//   }
+//   return closestPoint;
+// }
 
-function moveDot(evt) {
-  let mousePos;
-  if (evt.type === 'mousemove') {
-    mousePos = getMousePosition(evt);
-  } else if (evt.type === 'touchmove') {
-    mousePos = getTouchPosition(evt);
-  }
+// function moveDot(evt) {
+//   let mousePos;
+//   if (evt.type === 'mousemove') {
+//     mousePos = getMousePosition(evt);
+//   } else if (evt.type === 'touchmove') {
+//     mousePos = getTouchPosition(evt);
+//   }
 
-  const closestPoint = getClosestPointOnPath(curve, mousePos);
-  const pathLength = curve.getTotalLength();
-  let closestLength = 0;
-  let closestDistance = distance(mousePos, curve.getPointAtLength(0));
+//   const closestPoint = getClosestPointOnPath(curve, mousePos);
+//   const pathLength = curve.getTotalLength();
+//   let closestLength = 0;
+//   let closestDistance = distance(mousePos, curve.getPointAtLength(0));
 
-  for (let i = 0; i <= pathLength; i++) {
-    const currentPoint = curve.getPointAtLength(i);
-    const currentDistance = distance(mousePos, currentPoint);
-    if (currentDistance < closestDistance) {
-      closestDistance = currentDistance;
-      closestLength = i;
-    }
-  }
+//   for (let i = 0; i <= pathLength; i++) {
+//     const currentPoint = curve.getPointAtLength(i);
+//     const currentDistance = distance(mousePos, currentPoint);
+//     if (currentDistance < closestDistance) {
+//       closestDistance = currentDistance;
+//       closestLength = i;
+//     }
+//   }
 
-  const normalizedPosition = closestLength / pathLength;
-  experience.camera.updateCameraPosition(normalizedPosition);
+//   const normalizedPosition = closestLength / pathLength;
+//   experience.camera.updateCameraPosition(normalizedPosition);
 
-  gsap.to(dot, {
-    attr: { cx: closestPoint.x, cy: closestPoint.y },
-    duration: 0.1, // Animation duration
-    ease: "power2.out",
-    delay: 0.1 // Delay before the animation starts
-  });
-}
+//   gsap.to(dot, {
+//     attr: { cx: closestPoint.x, cy: closestPoint.y },
+//     duration: 0.1, // Animation duration
+//     ease: "power2.out",
+//     delay: 0.1 // Delay before the animation starts
+//   });
+// }
 
-function onDragStart(evt) {
-  evt.preventDefault();
-  isDragging = true;
+// function onDragStart(evt) {
+//   evt.preventDefault();
+//   isDragging = true;
 
-  gsap.to(dot, {
-    duration: 0.2,
-    attr: { r: 3 }, // Increase radius during drag
-    ease: 'power1.out',
-  });
+//   gsap.to(dot, {
+//     duration: 0.2,
+//     attr: { r: 3 }, // Increase radius during drag
+//     ease: 'power1.out',
+//   });
 
-  document.addEventListener('mousemove', moveDot);
-  document.addEventListener('touchmove', moveDot);
-}
+//   document.addEventListener('mousemove', moveDot);
+//   document.addEventListener('touchmove', moveDot);
+// }
 
-function onDragEnd() {
-  isDragging = false;
+// function onDragEnd() {
+//   isDragging = false;
 
-  gsap.to(dot, {
-    duration: 0.2,
-    attr: { r: 2 }, // Revert radius back after dragging ends
-    ease: 'power1.out',
-  });
+//   gsap.to(dot, {
+//     duration: 0.2,
+//     attr: { r: 2 }, // Revert radius back after dragging ends
+//     ease: 'power1.out',
+//   });
 
-  document.removeEventListener('mousemove', moveDot);
-  document.removeEventListener('touchmove', moveDot);
-}
+//   document.removeEventListener('mousemove', moveDot);
+//   document.removeEventListener('touchmove', moveDot);
+// }
 
-dot.addEventListener('mousedown', onDragStart);
-dot.addEventListener('touchstart', onDragStart);
-document.addEventListener('mouseup', onDragEnd);
-document.addEventListener('touchend', onDragEnd);
+// dot.addEventListener('mousedown', onDragStart);
+// dot.addEventListener('touchstart', onDragStart);
+// document.addEventListener('mouseup', onDragEnd);
+// document.addEventListener('touchend', onDragEnd);
 document.addEventListener('DOMContentLoaded', function () {
     // Create and insert the SoundCloud iframe
     function decodeUrl(encodedUrl) {

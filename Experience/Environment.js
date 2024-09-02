@@ -59,12 +59,11 @@ export default class Environment {
     }
 
     cloud(){
-        const textureLoader = new THREE.TextureLoader();
-        this.cloudTexture = textureLoader.load('/textures/clouds.png');
-        this.cloudTexture.flipY = false;
+        this.cloudTextur = this.resources.items.cloudTexture;
+        this.cloudTextur.flipY = false;
 
         this.cloudGeometry = new THREE.PlaneGeometry(10, 6); 
-        this.cloudMaterial = new THREE.MeshBasicMaterial({ map: this.cloudTexture, transparent: true ,opacity: this.params.cloudOpacity});
+        this.cloudMaterial = new THREE.MeshBasicMaterial({ map: this.cloudTextur, transparent: true ,opacity: this.params.cloudOpacity});
         this.cloud = new THREE.Mesh(this.cloudGeometry, this.cloudMaterial);
         this.cloud.position.set(-4.5, 1.64, -1.3);
         this.cloud.rotation.set( 0,Math.PI /2, 3, )

@@ -73,6 +73,11 @@ export default [
         path: "/textures/trunk1.png",
     },
     {
+        name: "cloudTexture",
+        type: "texture",
+        path: "/textures/clouds.png",
+    },
+    {
         name: "perlinTexture",
         type: "texture",
         path: "/textures/perlin.png",

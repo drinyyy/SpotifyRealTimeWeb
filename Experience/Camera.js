@@ -13,8 +13,13 @@ export default class Camera {
         this.isMoving = false; // To track if the camera is moving
         this.lookAtTarget = new THREE.Vector3(1, 0.5, 0); // Initial lookAt target
 
+        this.mouseDown = false; // Track mouse state
+        this.mousePosition = 0.5; // Initial position on the curve
+
         this.createPerspectiveCamera();
+        this.createCameraCurve();
         this.initParallaxEffect(); // Initialize parallax effect
+        this.addEventListeners(); // Add mouse event listeners
     }
 
     createPerspectiveCamera() {
@@ -29,8 +34,6 @@ export default class Camera {
         this.scene.add(this.perspectiveCamera);
         this.perspectiveCamera.position.set(3.58, 0.239, 1.82);
         this.perspectiveCamera.lookAt(this.lookAtTarget);
-        
-        this.createCameraCurve();
     }
 
     createCameraCurve() {
@@ -46,7 +49,6 @@ export default class Camera {
     initParallaxEffect() {
         this.parallaxTimeline = gsap.timeline({ repeat: -1, paused: true });
     
-        // Calculate the original target position
         const originalPosition = this.lookAtTarget.clone();
     
         this.parallaxTimeline.to(this.lookAtTarget, {
@@ -73,9 +75,67 @@ export default class Camera {
         this.parallaxTimeline.play();
     }
 
+    addEventListeners() {
+        // Mouse events
+        window.addEventListener('mousedown', (event) => {
+            this.mouseDown = true;
+            this.parallaxTimeline.pause(); 
+            document.body.style.cursor = 'grabbing'; 
+        });
+    
+        window.addEventListener('mouseup', () => {
+            this.mouseDown = false;
+            this.parallaxTimeline.play(); // Resume parallax effect on drag end
+            document.body.style.cursor = 'default'; // Reset cursor to 'default' when mouse is up
+        });
+    
+        window.addEventListener('mousemove', (event) => {
+            if (this.mouseDown) {
+                const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+                
+                this.mousePosition += movementX * 0.001;
+                this.mousePosition = Math.max(0, Math.min(1, this.mousePosition)); // Clamp between 0 and 1
+    
+                this.updateCameraPosition(this.mousePosition);
+            }
+        });
+    
+        // Touch events for mobile
+        window.addEventListener('touchstart', (event) => {
+            this.mouseDown = true;
+            this.parallaxTimeline.pause(); 
+    
+            // Track the initial touch position
+            this.initialTouchX = event.touches[0].clientX;
+            document.body.style.cursor = 'grabbing';
+        });
+    
+        window.addEventListener('touchend', () => {
+            this.mouseDown = false;
+            this.parallaxTimeline.play(); // Resume parallax effect on touch end
+            document.body.style.cursor = 'default'; // Reset cursor to 'default' when touch ends
+        });
+    
+        window.addEventListener('touchmove', (event) => {
+            if (this.mouseDown) {
+                // Calculate movement difference from the initial touch position
+                const touchX = event.touches[0].clientX;
+                const movementX = touchX - this.initialTouchX;
+                
+                this.mousePosition += movementX * 0.001;
+                this.mousePosition = Math.max(0, Math.min(1, this.mousePosition)); // Clamp between 0 and 1
+    
+                this.updateCameraPosition(this.mousePosition);
+    
+                // Update initial touch position for continuous movement
+                this.initialTouchX = touchX;
+            }
+        });
+    }
+    
+
     updateCameraPosition(dotPosition) {
         this.isMoving = true; // Camera is moving
-        this.parallaxTimeline.pause(); // Stop parallax effect
 
         const pointOnCurve = this.cameraCurve.getPoint(dotPosition);
         this.perspectiveCamera.position.copy(pointOnCurve);
@@ -84,11 +144,8 @@ export default class Camera {
         // Reset isMoving state after some delay
         gsap.delayedCall(1.0, () => {
             this.isMoving = false;
-            this.parallaxTimeline.play(); // Resume parallax effect
         });
     }
-
-    
 
     resize() {
         if (window.innerWidth < 648) {
@@ -105,8 +162,8 @@ export default class Camera {
         // Update the camera's lookAt to follow the moving target
         this.perspectiveCamera.lookAt(this.lookAtTarget);
         
-        if (!this.isMoving) {
-            this.parallaxTimeline.play(); // Continue parallax effect if not moving
+        if (!this.isMoving && !this.mouseDown) {
+            this.parallaxTimeline.play(); // Continue parallax effect if not moving and not dragging
         }
     }
 }
