@@ -132,57 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-const aboutIcon = document.getElementById('aboutIcon');
-const aboutContainer = document.getElementById('aboutContainer');
 
-
-const tl = gsap.timeline({ paused: true });
-
-
-tl.fromTo(
-  aboutContainer,
-  {
-    scale: 0.8,   
-    opacity: 0,   
-    display: 'none', 
-  },
-  {
-    scale: 1,     
-    opacity: 1,   
-    display: 'flex',
-    duration: 0.5, 
-    ease: 'power2.out', 
-  }
-);
-
-
-aboutIcon.addEventListener('click', () => {
-  if (aboutContainer.classList.contains('show')) {
-    
-    gsap.to(aboutContainer, {
-      scale: 0.8,
-      opacity: 0,
-      duration: 0.5,
-      ease: 'power2.in',
-      onComplete: () => {
-        aboutContainer.style.display = 'none'; 
-        aboutContainer.classList.remove('show'); 
-      }
-    });
-  } else {
-    
-    aboutContainer.style.display = 'flex'; 
-    aboutContainer.classList.add('show'); 
-    tl.restart(); 
-  }
-});
-
-
-document.addEventListener('mousemove', (event) => {
-  const x = (window.innerWidth / 2 - event.clientX) / 50;
-  const y = (window.innerHeight / 2 - event.clientY) / 50;
-  aboutContainer.style.transform = `translate(-50%, -50%) rotateX(${y}deg) rotateY(${x}deg)`;
-});
      
 
 

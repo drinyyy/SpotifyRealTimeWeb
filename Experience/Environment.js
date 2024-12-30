@@ -69,7 +69,6 @@ export default class Environment {
         this.cloud.rotation.set( 0,Math.PI /2, 3, )
         this.scene.add(this.cloud);
     }
-
     sky() {
         const geometry = new THREE.PlaneGeometry(50, 20);
         
